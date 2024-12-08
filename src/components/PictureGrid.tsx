@@ -5,7 +5,7 @@ import { useStore } from '../store/useStore';
 import { useCardManagementStore } from '../store/useCardManagementStore';
 import { CardManagementModal } from './card-management/CardManagementModal';
 import { BulkUploadModal } from './card-management/BulkUploadModal';
-import { processBatchImages } from '../utils/imageProcessor';
+import { processImage } from '../utils/imageProcessor';
 import { DroppableGrid } from './dnd/DroppableGrid';
 import { PictureCard } from './PictureCard';
 
@@ -26,18 +26,42 @@ export const PictureGrid: React.FC<PictureGridProps> = ({ categoryId }) => {
         .sort((a, b) => (a.order || 0) - (b.order || 0))
     : cards;
 
-  const handleBulkUpload = async (files: FileList, selectedCategoryId: string) => {
+  const handleBulkUpload = async (files: FileList, selectedCategoryId: string, cardData: any) => {
     try {
-      const processedImages = await processBatchImages(files);
-      for (const image of processedImages) {
-        await addCustomCard({
-          categoryId: selectedCategoryId,
-          imageUrl: image.url,
-          label: image.name
-        });
+      // Process each file one by one using processImage
+      for (const file of Array.from(files)) {
+        try {
+          // Process the image using our utility function
+          const processedImage = await processImage(file);
+
+          // Create card name from filename
+          const fileName = file.name.split('.')[0]
+            .replace(/-/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+
+          // Add the card using same method as single upload
+          await addCustomCard({
+            categoryId: selectedCategoryId,
+            name: fileName,
+            label: fileName,
+            description: cardData?.description || fileName,
+            audioDescription: cardData?.audioDescription || fileName,
+            imageUrl: processedImage,
+            isSystem: false
+          });
+        } catch (error) {
+          console.error(`Failed to process ${file.name}:`, error);
+          alert(`Failed to process ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
       }
+
+      console.log(`Successfully uploaded ${files.length} images`);
+      setIsBulkModalOpen(false);
     } catch (error) {
       console.error('Failed to process images:', error);
+      alert(error instanceof Error ? error.message : 'Failed to upload images');
     }
   };
 
@@ -122,7 +146,7 @@ export const PictureGrid: React.FC<PictureGridProps> = ({ categoryId }) => {
         <BulkUploadModal
           isOpen={isBulkModalOpen}
           onClose={() => setIsBulkModalOpen(false)}
-          onUpload={(files) => handleBulkUpload(files, categoryId)}
+          onUpload={(files, cardData) => handleBulkUpload(files, categoryId, cardData)}
           categoryId={categoryId}
         />
       </div>
