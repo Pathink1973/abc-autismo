@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Upload } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { CategorySelect } from './CategorySelect';
-import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 
 interface BulkUploadModalProps {
@@ -13,7 +12,6 @@ interface BulkUploadModalProps {
 }
 
 interface CardData {
-  name: string;
   description: string;
   audioDescription: string;
 }
@@ -29,7 +27,6 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [cardData, setCardData] = useState<CardData>({
-    name: '',
     description: '',
     audioDescription: '',
   });
@@ -39,7 +36,6 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
       setSelectedCategoryId(categoryId || '');
       setError(null);
       setCardData({
-        name: '',
         description: '',
         audioDescription: '',
       });
@@ -89,11 +85,6 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
       return;
     }
 
-    if (!cardData.name.trim()) {
-      setError('Por favor, insira um nome para os cartões');
-      return;
-    }
-
     // Check if all files are images
     const validFiles = Array.from(files).every(file => 
       file.type.startsWith('image/')
@@ -115,7 +106,6 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     setError(null);
     setIsDragging(false);
     setCardData({
-      name: '',
       description: '',
       audioDescription: '',
     });
@@ -123,7 +113,7 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setCardData(prev => ({
@@ -157,37 +147,20 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
           <CategorySelect
             value={selectedCategoryId}
-            onChange={setSelectedCategoryId}
+            onChange={(value) => setSelectedCategoryId(value)}
           />
 
           <div className="space-y-4">
-            <Input
-              label="Nome dos Cartões"
-              id="name"
-              name="name"
-              value={cardData.name}
-              onChange={handleInputChange}
-              placeholder="Nome comum para todos os cartões"
-            />
-
             <Textarea
-              label="Descrição"
-              id="description"
-              name="description"
+              placeholder="Descrição dos cartões (opcional)"
               value={cardData.description}
-              onChange={handleInputChange}
-              placeholder="Descrição comum para todos os cartões"
-              rows={3}
+              onChange={(e) => setCardData({ ...cardData, description: e.target.value })}
             />
 
             <Textarea
-              label="Descrição de Áudio"
-              id="audioDescription"
-              name="audioDescription"
+              placeholder="Descrição em áudio dos cartões (opcional)"
               value={cardData.audioDescription}
-              onChange={handleInputChange}
-              placeholder="Descrição de áudio comum para todos os cartões"
-              rows={3}
+              onChange={(e) => setCardData({ ...cardData, audioDescription: e.target.value })}
             />
           </div>
 
