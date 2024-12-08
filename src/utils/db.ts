@@ -1,36 +1,52 @@
-import { openDB, IDBPDatabase } from 'idb';
+import { openDB } from 'idb';
 import { PictureCard } from '../types';
 
 const DB_NAME = 'abc-autismo-db';
 const STORE_NAME = 'custom-cards';
-const DB_VERSION = 2; // Increment version to force upgrade
-
-let dbPromise: Promise<IDBPDatabase> | null = null;
+const DB_VERSION = 2; // Increased version number to match existing DB
 
 export const initDB = async () => {
-  if (!dbPromise) {
-    dbPromise = openDB(DB_NAME, DB_VERSION, {
-      upgrade(db, oldVersion, newVersion, transaction) {
-        // Delete old store if exists
-        if (db.objectStoreNames.contains(STORE_NAME)) {
-          db.deleteObjectStore(STORE_NAME);
+  try {
+    const db = await openDB(DB_NAME, DB_VERSION, {
+      upgrade(db, oldVersion, newVersion) {
+        // Handle different database versions
+        if (oldVersion < 1) {
+          // Create initial store
+          const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          store.createIndex('categoryId', 'categoryId', { unique: false });
+          store.createIndex('order', 'order', { unique: false });
         }
-        // Create new store
-        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        
+        if (oldVersion < 2) {
+          // Add new indexes or modify structure for version 2
+          const store = db.objectStoreNames.contains(STORE_NAME)
+            ? db.transaction(STORE_NAME).objectStore(STORE_NAME)
+            : db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+
+          if (!store.indexNames.contains('order')) {
+            store.createIndex('order', 'order', { unique: false });
+          }
+          if (!store.indexNames.contains('categoryId')) {
+            store.createIndex('categoryId', 'categoryId', { unique: false });
+          }
+        }
       },
       blocked() {
-        console.warn('Database upgrade blocked. Please close other tabs/windows.');
+        console.warn('Database upgrade blocked. Please close other tabs.');
       },
       blocking() {
         console.warn('Database blocking other connections. Please reload.');
       },
       terminated() {
         console.error('Database connection terminated unexpectedly.');
-        dbPromise = null;
       },
     });
+
+    return db;
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+    throw error;
   }
-  return dbPromise;
 };
 
 export const getAllCards = async (): Promise<PictureCard[]> => {
@@ -39,23 +55,33 @@ export const getAllCards = async (): Promise<PictureCard[]> => {
     const transaction = db.transaction(STORE_NAME, 'readonly');
     const store = transaction.objectStore(STORE_NAME);
     const cards = await store.getAll();
-    await transaction.done;
     return cards;
   } catch (error) {
     console.error('Failed to get cards:', error);
-    return []; // Return empty array instead of throwing
+    return [];
   }
 };
 
 export const addCard = async (card: PictureCard): Promise<void> => {
   try {
     const db = await initDB();
-    const transaction = db.transaction(STORE_NAME, 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
-    await store.add(card);
-    await transaction.done;
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    await tx.store.add(card);
+    await tx.done;
   } catch (error) {
     console.error('Failed to add card:', error);
+    throw error;
+  }
+};
+
+export const updateCard = async (card: PictureCard): Promise<void> => {
+  try {
+    const db = await initDB();
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    await tx.store.put(card);
+    await tx.done;
+  } catch (error) {
+    console.error('Failed to update card:', error);
     throw error;
   }
 };
@@ -63,10 +89,9 @@ export const addCard = async (card: PictureCard): Promise<void> => {
 export const deleteCard = async (id: string): Promise<void> => {
   try {
     const db = await initDB();
-    const transaction = db.transaction(STORE_NAME, 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
-    await store.delete(id);
-    await transaction.done;
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    await tx.store.delete(id);
+    await tx.done;
   } catch (error) {
     console.error('Failed to delete card:', error);
     throw error;
@@ -76,17 +101,16 @@ export const deleteCard = async (id: string): Promise<void> => {
 export const clearCards = async (): Promise<void> => {
   try {
     const db = await initDB();
-    const transaction = db.transaction(STORE_NAME, 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
-    await store.clear();
-    await transaction.done;
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    await tx.store.clear();
+    await tx.done;
   } catch (error) {
     console.error('Failed to clear cards:', error);
     throw error;
   }
 };
 
-// Initialize database on module load
+// Initialize database when module loads
 initDB().catch(error => {
   console.error('Failed to initialize database:', error);
 });

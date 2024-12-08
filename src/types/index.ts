@@ -12,6 +12,8 @@ export interface PictureCard {
   label: string;
   voiceLabel?: string;
   isSystem?: boolean;
+  order?: number;
+  createdAt?: string;
 }
 
 export interface CardManagementStore {
@@ -21,6 +23,8 @@ export interface CardManagementStore {
   initialize: () => Promise<void>;
   addCustomCard: (card: Omit<PictureCard, 'id' | 'isSystem'>) => Promise<void>;
   deleteCard: (cardId: string) => Promise<void>;
+  reorderCards: (categoryId: string, startIndex: number, endIndex: number) => Promise<void>;
+  clearCustomCards: () => Promise<void>;
 }
 
 export interface CommunicationStore {

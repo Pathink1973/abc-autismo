@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DownloadButton } from './ui/DownloadButton';
 
 interface InstructionsModalProps {
   isOpen: boolean;
@@ -11,6 +12,10 @@ export const InstructionsModal: React.FC<InstructionsModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent modal from closing
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -43,11 +48,11 @@ export const InstructionsModal: React.FC<InstructionsModalProps> = ({
             </div>
             
             <div className="p-6 overflow-y-auto max-h-[calc(80vh-80px)]">
-              <p className="text-gray-600 leading-relaxed mb-6">
-                A aplicação deve ser intuitiva, permitindo que os cuidadores, terapeutas ou pais adicionem imagens personalizadas para criar um sistema de comunicação adaptado às necessidades da criança. As imagens representam objetos, lugares, roupas, alimentos ou outras categorias essenciais para a comunicação.
-              </p>
-
               <div className="space-y-6">
+                <p className="text-gray-600 leading-relaxed">
+                  A aplicação deve ser intuitiva, permitindo que os cuidadores, terapeutas ou pais adicionem imagens personalizadas para criar um sistema de comunicação adaptado às necessidades da criança. As imagens representam objetos, lugares, roupas, alimentos ou outras categorias essenciais para a comunicação.
+                </p>
+
                 <section>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Como Funciona:</h3>
                   
@@ -73,6 +78,18 @@ export const InstructionsModal: React.FC<InstructionsModalProps> = ({
                       <p className="text-gray-600 ml-4">• É possível adicionar imagens importadas a partir do computador ou por URL.</p>
                       <p className="text-gray-600 ml-4">• O texto ou som associado a cada imagem pode ser ajustado para refletir a linguagem usada pela criança.</p>
                     </div>
+
+                    <div>
+                      <h4 className="font-medium text-gray-900">5. Usar imagens PEC's na aplicação ABC Autismo:</h4>
+                      <div className="space-y-2 ml-4 text-gray-600">
+                        <p>• Para puder usar a aplicação com imagens, fornecemos uma pasta zipada com as categorias todas.</p>
+                        <p>• Depois de descarregar no computador, descompactar a pasta zipada.</p>
+                        <p>• Adicione as imagens em cada categoria, usando a função "Adicionar imagem", ou seja, uma de cada vez.</p>
+                        <p>• Adicione as imagens em cada categoria, usando a função "Upload em massa", ou seja, várias imagens.</p>
+                        <p>• Porém, pode adicionar novas imagens nas categorias correspondentes.</p>
+                        <p>• Carregue no Botão "Descarregar Imagens" para guardar no seu computador as imagens.</p>
+                      </div>
+                    </div>
                   </div>
                 </section>
 
@@ -95,6 +112,13 @@ export const InstructionsModal: React.FC<InstructionsModalProps> = ({
                     Autoria de Patrício Brito © 2024
                   </p>
                 </section>
+
+                <div className="pt-4">
+                  <DownloadButton 
+                    url="https://drive.google.com/file/d/1cWgL2x6OsNXAHwQGjMnmWJvGZUwkfiJI/view?usp=sharing"
+                    onClick={handleDownload}
+                  />
+                </div>
               </div>
             </div>
           </motion.div>
