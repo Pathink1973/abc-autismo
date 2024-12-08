@@ -20,7 +20,8 @@ interface CardManagementState {
 
 interface CardManagementActions {
   setTemporaryCategory: (category: Category | null) => void;
-  addCustomCard: (card: Omit<Card, 'id'>) => Promise<void>;
+  addCustomCard: (card: Omit<Card, 'id'>) => Promise<Card>;
+  addCustomCards: (cards: Omit<Card, 'id'>[]) => Promise<Card[]>;
   addCustomCategory: (category: Omit<Category, 'id'>) => Promise<Category>;
   deleteCategory: (categoryId: string) => Promise<void>;
   initialize: () => Promise<void>;
@@ -73,9 +74,23 @@ export const useCardManagementStore = create<CardManagementStore>((set, get) => 
       set(state => ({
         cards: [...state.cards, newCard]
       }));
+      return newCard;
     } catch (error) {
       console.error('Failed to add custom card:', error);
       throw new Error('Falha ao adicionar cartão');
+    }
+  },
+
+  addCustomCards: async (cards) => {
+    try {
+      const newCards = await Promise.all(cards.map(card => db.addCard(card)));
+      set(state => ({
+        cards: [...state.cards, ...newCards]
+      }));
+      return newCards;
+    } catch (error) {
+      console.error('Failed to add custom cards:', error);
+      throw new Error('Falha ao adicionar cartões');
     }
   },
 
