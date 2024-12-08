@@ -9,7 +9,7 @@ export const CommunicationBar: React.FC = () => {
   const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
 
   const speak = () => {
-    const text = selectedCards.map((card) => card.label).join(' ');
+    const text = selectedCards.map((card) => card.voiceLabel || card.label).join(' ');
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'pt-PT';
     utterance.voice = window.speechSynthesis
@@ -37,27 +37,26 @@ export const CommunicationBar: React.FC = () => {
           <div className="flex-1 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
             <AnimatePresence mode="popLayout">
               {selectedCards.map((card, index) => (
-                <React.Fragment key={card.id}>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                    transition={{ type: "spring", delay: index * 0.1 }}
-                    className="relative w-24 flex-shrink-0 group"
-                    onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredIndex(null)}
+                <motion.div
+                  key={`${card.id}-${index}`} // Using both card.id and index to ensure uniqueness
+                  initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                  transition={{ type: "spring", delay: index * 0.1 }}
+                  className="relative w-24 flex-shrink-0 group"
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                >
+                  <PictureCard card={card} />
+                  <motion.button
+                    onClick={() => removeCard(card.id)}
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-2 bg-blue-500/90 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg backdrop-blur-sm"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    aria-label={`Remover ${card.label}`}
                   >
-                    <PictureCard card={card} />
-                    <motion.button
-                      onClick={() => removeCard(card.id)}
-                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-2 bg-blue-500/90 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg backdrop-blur-sm"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      aria-label={`Remover ${card.label}`}
-                    >
-                      <X className="w-4 h-4" />
-                    </motion.button>
-                  </motion.div>
+                    <X className="w-4 h-4" />
+                  </motion.button>
                   {index < selectedCards.length - 1 && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0 }}
@@ -76,7 +75,7 @@ export const CommunicationBar: React.FC = () => {
                       />
                     </motion.div>
                   )}
-                </React.Fragment>
+                </motion.div>
               ))}
             </AnimatePresence>
           </div>

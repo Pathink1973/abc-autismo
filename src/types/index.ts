@@ -10,11 +10,22 @@ export interface PictureCard {
   categoryId: string;
   imageUrl: string;
   label: string;
-  isSystem?: boolean; // New field to identify system cards
+  voiceLabel?: string;
+  isSystem?: boolean;
 }
 
 export interface CardManagementStore {
   cards: PictureCard[];
-  addCustomCard: (card: Omit<PictureCard, 'id'>) => void;
-  deleteCard: (cardId: string) => void;
+  isLoading: boolean;
+  error: string | null;
+  initialize: () => Promise<void>;
+  addCustomCard: (card: Omit<PictureCard, 'id' | 'isSystem'>) => Promise<void>;
+  deleteCard: (cardId: string) => Promise<void>;
+}
+
+export interface CommunicationStore {
+  selectedCards: PictureCard[];
+  addCard: (card: PictureCard) => void;
+  removeCard: (cardId: string) => void;
+  clearCards: () => void;
 }

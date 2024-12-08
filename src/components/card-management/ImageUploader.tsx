@@ -7,10 +7,11 @@ interface ImageUploaderProps {
   uploadMethod: 'url' | 'file';
   imageUrl: string;
   onUrlChange: (url: string) => void;
-  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onFileChange: (dataUrl: string) => void;
   onMethodChange: (method: 'url' | 'file') => void;
   fileInputRef: React.RefObject<HTMLInputElement>;
   previewUrl: string;
+  disabled?: boolean;
 }
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({
@@ -21,9 +22,17 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   onMethodChange,
   fileInputRef,
   previewUrl,
+  disabled,
 }) => {
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onUrlChange(e.target.value || '');
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        onFileChange(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -34,6 +43,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           variant={uploadMethod === 'url' ? 'primary' : 'secondary'}
           onClick={() => onMethodChange('url')}
           className="flex-1"
+          disabled={disabled}
         >
           <Link className="w-4 h-4" />
           URL
@@ -43,6 +53,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           variant={uploadMethod === 'file' ? 'primary' : 'secondary'}
           onClick={() => onMethodChange('file')}
           className="flex-1"
+          disabled={disabled}
         >
           <Upload className="w-4 h-4" />
           Arquivo
@@ -54,9 +65,10 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           type="url"
           label="URL da Imagem"
           value={imageUrl}
-          onChange={handleUrlChange}
+          onChange={(e) => onUrlChange(e.target.value)}
           placeholder="https://exemplo.com/imagem.jpg"
           required={uploadMethod === 'url'}
+          disabled={disabled}
         />
       ) : (
         <div>
@@ -66,10 +78,11 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           <input
             type="file"
             ref={fileInputRef}
-            onChange={onFileChange}
+            onChange={handleFileChange}
             accept="image/*"
             className="w-full border rounded-md p-2"
             required={uploadMethod === 'file'}
+            disabled={disabled}
           />
         </div>
       )}

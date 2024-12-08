@@ -9,6 +9,12 @@ export const categories: Category[] = [
     color: 'bg-blue-500'
   },
   {
+    id: 'animals',
+    name: translations.categories.animals,
+    icon: '🐾',
+    color: 'bg-amber-500'
+  },
+  {
     id: 'body',
     name: translations.categories.body,
     icon: '👤',
@@ -21,10 +27,10 @@ export const categories: Category[] = [
     color: 'bg-indigo-500'
   },
   {
-    id: 'diseases',
-    name: translations.categories.diseases,
-    icon: '🏥',
-    color: 'bg-red-400'
+    id: 'colors',
+    name: translations.categories.colors,
+    icon: '🎨',
+    color: 'bg-violet-500'
   },
   {
     id: 'emotions',
@@ -43,6 +49,12 @@ export const categories: Category[] = [
     name: translations.categories.general,
     icon: '📌',
     color: 'bg-purple-500'
+  },
+  {
+    id: 'numbers',
+    name: translations.categories.numbers,
+    icon: '🔢',
+    color: 'bg-teal-500'
   },
   {
     id: 'objects',

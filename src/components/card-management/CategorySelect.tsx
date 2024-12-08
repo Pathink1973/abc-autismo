@@ -15,8 +15,10 @@ export const CategorySelect: React.FC<CategorySelectProps> = ({ value, onChange 
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full border rounded-md p-2"
+        className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        required
       >
+        <option value="">Selecione uma categoria</option>
         {categories.map((category) => (
           <option key={category.id} value={category.id}>
             {category.name}

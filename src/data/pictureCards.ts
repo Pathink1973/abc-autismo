@@ -1,4 +1,5 @@
 import { PictureCard } from '../types';
-import { translations } from '../i18n/translations';
 
-export const pictureCards: PictureCard[] = [];
+export const pictureCards: PictureCard[] = [
+  // Add your picture cards here, excluding the "Brincar" card
+];

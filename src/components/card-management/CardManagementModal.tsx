@@ -1,15 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { categories } from '../../data/categories';
 import { ImageUploader } from './ImageUploader';
 import { CategorySelect } from './CategorySelect';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
+import { validateImageSize, compressImage } from '../../utils/storage';
 
 interface CardManagementModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddCard: (card: { categoryId: string; imageUrl: string; label: string }) => void;
+  onAddCard: (card: { categoryId: string; imageUrl: string; label: string; voiceLabel?: string }) => Promise<void>;
 }
 
 export const CardManagementModal: React.FC<CardManagementModalProps> = ({
@@ -18,73 +18,89 @@ export const CardManagementModal: React.FC<CardManagementModalProps> = ({
   onAddCard,
 }) => {
   const initialState = {
-    categoryId: categories[0].id,
+    categoryId: '',
     label: '',
+    voiceLabel: '',
     imageUrl: '',
     previewUrl: '',
     uploadMethod: 'url' as const,
   };
 
   const [formState, setFormState] = useState(initialState);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
       setFormState(initialState);
+      setError(null);
+      setIsSubmitting(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     }
   }, [isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { categoryId, label, imageUrl, previewUrl, uploadMethod } = formState;
+    setError(null);
     
-    if (categoryId && label && (imageUrl || previewUrl)) {
-      onAddCard({
+    const { categoryId, label, voiceLabel, imageUrl, previewUrl, uploadMethod } = formState;
+    
+    if (!categoryId) {
+      setError('Por favor, selecione uma categoria');
+      return;
+    }
+
+    if (!label) {
+      setError('Por favor, insira um nome para a imagem');
+      return;
+    }
+
+    const finalImageUrl = uploadMethod === 'url' ? imageUrl : previewUrl;
+    if (!finalImageUrl) {
+      setError('Por favor, selecione uma imagem');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      let processedImageUrl = finalImageUrl;
+
+      // Compress image if it's a data URL (file upload)
+      if (uploadMethod === 'file' && previewUrl) {
+        processedImageUrl = await compressImage(previewUrl);
+        if (!validateImageSize(processedImageUrl)) {
+          setError('Imagem muito grande. Por favor, use uma imagem menor.');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      await onAddCard({
         categoryId,
         label,
-        imageUrl: uploadMethod === 'url' ? imageUrl : previewUrl,
+        voiceLabel: voiceLabel || label, // Use custom voice label if provided, otherwise use regular label
+        imageUrl: processedImageUrl,
       });
+      
       handleClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Falha ao adicionar imagem');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleClose = () => {
     setFormState(initialState);
+    setError(null);
+    setIsSubmitting(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
     onClose();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormState(prev => ({
-          ...prev,
-          previewUrl: reader.result as string || '',
-          imageUrl: '',
-        }));
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setFormState(prev => ({ ...prev, previewUrl: '' }));
-    }
-  };
-
-  const handleUrlChange = (newUrl: string) => {
-    setFormState(prev => ({
-      ...prev,
-      imageUrl: newUrl,
-      previewUrl: '',
-    }));
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
 
   if (!isOpen) return null;
@@ -98,12 +114,19 @@ export const CardManagementModal: React.FC<CardManagementModalProps> = ({
             onClick={handleClose}
             type="button"
             className="text-gray-500 hover:text-gray-700"
+            disabled={isSubmitting}
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+              {error}
+            </div>
+          )}
+
           <CategorySelect
             value={formState.categoryId}
             onChange={(value) =>
@@ -120,13 +143,37 @@ export const CardManagementModal: React.FC<CardManagementModalProps> = ({
             }
             placeholder="Digite o nome da imagem"
             required
+            disabled={isSubmitting}
+          />
+
+          <Input
+            type="text"
+            label="Nome para Voz (opcional)"
+            value={formState.voiceLabel}
+            onChange={(e) =>
+              setFormState((prev) => ({ ...prev, voiceLabel: e.target.value }))
+            }
+            placeholder="Digite como a voz deve pronunciar (opcional)"
+            disabled={isSubmitting}
           />
 
           <ImageUploader
             uploadMethod={formState.uploadMethod}
             imageUrl={formState.imageUrl}
-            onUrlChange={handleUrlChange}
-            onFileChange={handleFileChange}
+            onUrlChange={(url) =>
+              setFormState((prev) => ({
+                ...prev,
+                imageUrl: url,
+                previewUrl: '',
+              }))
+            }
+            onFileChange={(dataUrl) =>
+              setFormState((prev) => ({
+                ...prev,
+                previewUrl: dataUrl,
+                imageUrl: '',
+              }))
+            }
             onMethodChange={(method) =>
               setFormState((prev) => ({
                 ...prev,
@@ -137,6 +184,7 @@ export const CardManagementModal: React.FC<CardManagementModalProps> = ({
             }
             fileInputRef={fileInputRef}
             previewUrl={formState.previewUrl}
+            disabled={isSubmitting}
           />
 
           <div className="flex justify-end gap-2 mt-6">
@@ -144,13 +192,15 @@ export const CardManagementModal: React.FC<CardManagementModalProps> = ({
               type="button"
               variant="outline"
               onClick={handleClose}
+              disabled={isSubmitting}
             >
               Cancelar
             </Button>
             <Button
               type="submit"
+              disabled={isSubmitting}
             >
-              Adicionar
+              {isSubmitting ? 'Adicionando...' : 'Adicionar'}
             </Button>
           </div>
         </form>

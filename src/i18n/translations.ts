@@ -3,12 +3,14 @@ export const translations = {
   appDescription: 'Selecione imagens para comunicar o que quer dizer',
   categories: {
     actions: 'Ações',
+    animals: 'Animais',
     body: 'Corpo Humano',
     clothes: 'Roupa',
-    diseases: 'Doenças',
+    colors: 'Cores',
     emotions: 'Sentimentos',
     food: 'Comidas & Bebidas',
     general: 'Geral',
+    numbers: 'Números',
     objects: 'Objetos',
     places: 'Lugares',
     weather: 'Tempo'
