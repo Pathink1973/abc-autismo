@@ -4,6 +4,9 @@ COMO USAR O ABC AUTISMO?
 
 A aplicação deve ser intuitiva, permitindo que os cuidadores, terapeutas ou pais adicionem imagens personalizadas para criar um sistema de comunicação adaptado às necessidades da criança. As imagens representam objetos, lugares, roupas, alimentos ou outras categorias essenciais para a comunicação.
 
+![ABC AUTISMO](assets/preview.png)
+
+
 Como Funciona:
 1. Seleção de Imagens:
 • As imagens são organizadas por categorias (ex.: Comida, Lugares, Roupa).
