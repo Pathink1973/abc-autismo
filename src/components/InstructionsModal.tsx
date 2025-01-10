@@ -109,7 +109,7 @@ export const InstructionsModal: React.FC<InstructionsModalProps> = ({
                     Esta aplicação foi desenvolvida com o propósito de promover a inclusão e melhorar a comunicação de crianças no espectro do autismo. O conteúdo e as funcionalidades são projetados para facilitar a interação entre cuidadores, terapeutas e crianças, respeitando as necessidades individuais de cada utilizador. A reprodução, distribuição ou uso não autorizado de qualquer parte deste sistema é estritamente proibida. As imagens usadas nesta aplicação foram todas geradas com inteligência artificial. Obrigado por contribuir para um mundo mais acessível e inclusivo. O conteúdo está disponível sob a licença Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International, permitindo a partilha e adaptação, desde que seja atribuído o devido crédito, para fins não comerciais, e com distribuição sob os mesmos termos. Juntos, construímos um mundo mais inclusivo e acessível.
                   </p>
                   <p className="text-gray-600 font-medium">
-                    Autoria de Patrício Brito © 2024
+                    Autoria de Patrício Brito © 2025
                   </p>
                 </section>
 
