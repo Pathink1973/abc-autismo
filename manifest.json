@@ -1,21 +1,21 @@
 {
   "name": "ABC-Autismo",
   "short_name": "ABC",
-  "description": "Uma aplicação para auxiliar no suporte ao autismo.",
-  "start_url": "https://abc-autismo.netlify.app/",
+  "description": "Comunicação Aumentativa e Alternativa para o Autismo.",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0000ff",
   "icons": [
     {
-      "src": "https://lucide.dev/icons/bot.svg",
+      "src": "/icons/brain-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png"
     },
     {
-      "src": "https://lucide.dev/icons/bot.svg",
+      "src": "/icons/brain-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ],
   "scope": "/",
